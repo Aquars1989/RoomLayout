@@ -1,0 +1,15 @@
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\bin\Debug\Layout.exe
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\bin\Debug\Layout.pdb
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\obj\Debug\RoomLayout.csprojResolveAssemblyReference.cache
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\obj\Debug\Layout.Properties.Resources.resources
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\obj\Debug\RoomLayout.csproj.GenerateResource.Cache
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\obj\Debug\Layout.exe
+c:\users\aquars\documents\visual studio 2013\Projects\Layout\Layout\obj\Debug\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\Layout.exe
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.csprojResolveAssemblyReference.cache
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.csproj.GenerateResource.Cache
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\Debug\Layout.exe
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\Debug\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.MainForm.resources
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.Properties.Resources.resources
