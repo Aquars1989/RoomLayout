@@ -149,7 +149,15 @@ namespace RoomLayout
             get { return _Angle; }
             set
             {
-                value %= 180;
+                if (value > 180)
+                {
+                    value = (value % 180) - 180;
+                }
+                else if (value < -180)
+                {
+                    value = (value % 180) + 180;
+                }
+
                 if (_Angle == value) return;
                 _Angle = value;
                 _RebuildPoints = true;
@@ -252,14 +260,19 @@ namespace RoomLayout
             PointF center = GetCenter();
 
             int angle = Angle;
-            if (Height > Width) angle += 90;
+            if (Height > Width) angle +=90;
+            if (angle > 180)
+            {
+                angle = (angle % 180) - 180;
+            }
+
             if (angle > 145) angle += 180;
-            else if (angle < 0 && angle > -145) angle += 180;
+            else if ((angle < -45)) angle += 180;
 
             double rotate = angle * Math.PI / 180F;
 
-            float fixX = (float)(distance * Math.Cos(rotate)) * Scale;
-            float fixY = (float)(distance * Math.Sin(rotate)) * Scale;
+            float fixX = (float)(distance * Math.Cos(rotate));
+            float fixY = (float)(distance * Math.Sin(rotate));
             float drawX = center.X - fixX * (Name.Length - 1) / 2;
             float drawY = center.Y - fixY * (Name.Length - 1) / 2;
             for (int i = 0; i < Name.Length; i++)

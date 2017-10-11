@@ -38,29 +38,28 @@ namespace RoomLayout
             }
         }
 
-        private Size _MainSize;
+        private SizeSet _MainSize;
         [Description("版面尺寸"), DisplayName("版面尺寸")]
-        public Size MainSize
+        public SizeSet MainSize
         {
             get { return _MainSize; }
-            set
-            {
-                _MainSize = value;
-                foreach (LayoutObject layoutObject in _Objects)
-                {
-                    layoutObject.ParentWidth = MainSize.Width;
-                    layoutObject.ParentHeight = MainSize.Height;
-                }
-                MainScale = Math.Min((picMain.Width - 60) / (float)_MainSize.Width, (picMain.Height - 60) / (float)_MainSize.Height);
-                picMain.Invalidate();
-            }
         }
 
         public MainForm()
         {
             InitializeComponent();
-            MainSize = new Size(500, 500);
-            Load();
+            _MainSize = new SizeSet(500, 500);
+            _MainSize.SizeChanged += (x, e) =>
+             {
+                 foreach (LayoutObject layoutObject in _Objects)
+                 {
+                     layoutObject.ParentWidth = MainSize.Width;
+                     layoutObject.ParentHeight = MainSize.Height;
+                 }
+                 MainScale = Math.Min((picMain.Width - 60) / (float)_MainSize.Width, (picMain.Height - 60) / (float)_MainSize.Height);
+                 picMain.Invalidate();
+             };
+            LoadData();
         }
 
         private void btnNew_Click(object sender, EventArgs e)
@@ -76,7 +75,7 @@ namespace RoomLayout
             _Objects.Add(newObj);
             lvList.Items.Add(new ListViewItem(string.Format("{0}：{1}", newObj.ID.ToString().PadLeft(3, '0'), newObj.Name)) { Tag = newObj.ID });
             picMain.Invalidate();
-            Save();
+            SaveData();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -93,7 +92,7 @@ namespace RoomLayout
             }
             _Objects.RemoveAll((x) => { return removeID.Contains(x.ID); });
             picMain.Invalidate();
-            Save();
+            SaveData();
         }
 
         private void RefreshListView()
@@ -144,7 +143,7 @@ namespace RoomLayout
             e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
 
             e.Graphics.DrawString(string.Format("{0:P0}", MainScale), Font, Brushes.Red, _DrawPaddingX, 5);
-            e.Graphics.DrawRectangle(Pens.LawnGreen, _DrawPaddingX, _DrawPaddingY, MainSize.Width * MainScale, MainSize.Height * MainScale);
+            e.Graphics.DrawRectangle(Pens.ForestGreen, _DrawPaddingX, _DrawPaddingY, MainSize.Width * MainScale, MainSize.Height * MainScale);
 
             foreach (LayoutObject layoutObject in _Objects)
             {
@@ -174,7 +173,8 @@ namespace RoomLayout
         private void pgPropertys_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             picMain.Invalidate();
-            Save();
+            RefreshListView();
+            SaveData();
         }
 
         private void lvList_DrawItem(object sender, DrawListViewItemEventArgs e)
@@ -255,7 +255,8 @@ namespace RoomLayout
                         _DragBaseY = e.Y;
                         pgPropertys.Refresh();
                         picMain.Refresh();
-                    } break;
+                    }
+                    break;
                 case 2:
                     {
                         int moveX = e.X - _DragBaseX;
@@ -358,7 +359,7 @@ namespace RoomLayout
                 Cursor.Position = PointToScreen(new Point((int)center.X, (int)center.Y));
             }
             picMain_MouseMove(sender, e);
-            Save();
+            SaveData();
         }
 
         private void picMain_SizeChanged(object sender, EventArgs e)
@@ -391,7 +392,7 @@ namespace RoomLayout
         }
 
         private static string _FilePath = "config.txt";
-        private void Save()
+        private void SaveData()
         {
             List<string> write = new List<string>();
             write.Add(string.Format("{0}x{1}", _MainSize.Width, _MainSize.Height));
@@ -402,7 +403,7 @@ namespace RoomLayout
             File.WriteAllLines(_FilePath, write);
         }
 
-        private void Load()
+        private void LoadData()
         {
             if (File.Exists(_FilePath))
             {
@@ -413,7 +414,7 @@ namespace RoomLayout
                 int width, height;
                 if (size.Length >= 2 && int.TryParse(size[0], out width) && int.TryParse(size[1], out height))
                 {
-                    MainSize = new Size(width, height);
+                    MainSize.SetSize(width, height);
                 }
 
                 _Objects.Clear();
@@ -437,8 +438,63 @@ namespace RoomLayout
                         });
                     }
                 }
-
+                RefreshListView();
             }
+        }
+    }
+
+    /// <summary>
+    /// 封裝Size物件
+    /// </summary>
+    public class SizeSet
+    {
+        public event EventHandler SizeChanged;
+
+        public void OnSizeChanged()
+        {
+            if (SizeChanged != null)
+            {
+                SizeChanged(this, new EventArgs());
+            }
+        }
+
+
+        private int _Width;
+        public int Width
+        {
+            get { return _Width; }
+            set
+            {
+                if (_Width == value) return;
+                _Width = value;
+                OnSizeChanged();
+            }
+        }
+
+        private int _Height;
+        public int Height
+        {
+            get { return _Height; }
+            set
+            {
+                if (_Height == value) return;
+                _Height = value;
+                OnSizeChanged();
+            }
+        }
+
+        public SizeSet(int width, int height)
+        {
+            _Width = width;
+            _Height = height;
+            OnSizeChanged();
+        }
+
+        public void SetSize(int width, int height)
+        {
+            _Width = width;
+            _Height = height;
+            OnSizeChanged();
         }
     }
 }

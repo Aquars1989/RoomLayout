@@ -1,0 +1,7 @@
+E:\VsProject\RoomLayout\RoomLayout\bin\Release\Layout.exe
+E:\VsProject\RoomLayout\RoomLayout\bin\Release\Layout.pdb
+E:\VsProject\RoomLayout\RoomLayout\obj\Release\RoomLayout.MainForm.resources
+E:\VsProject\RoomLayout\RoomLayout\obj\Release\RoomLayout.Properties.Resources.resources
+E:\VsProject\RoomLayout\RoomLayout\obj\Release\RoomLayout.csproj.GenerateResource.Cache
+E:\VsProject\RoomLayout\RoomLayout\obj\Release\Layout.exe
+E:\VsProject\RoomLayout\RoomLayout\obj\Release\Layout.pdb

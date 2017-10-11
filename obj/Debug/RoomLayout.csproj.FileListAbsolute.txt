@@ -13,3 +13,11 @@ C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\Debug\Layout.pdb
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.MainForm.resources
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Debug\RoomLayout.Properties.Resources.resources
+E:\VsProject\RoomLayout\RoomLayout\bin\Debug\Layout.exe
+E:\VsProject\RoomLayout\RoomLayout\bin\Debug\Layout.pdb
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\RoomLayout.csprojResolveAssemblyReference.cache
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\RoomLayout.MainForm.resources
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\RoomLayout.Properties.Resources.resources
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\RoomLayout.csproj.GenerateResource.Cache
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\Layout.exe
+E:\VsProject\RoomLayout\RoomLayout\obj\Debug\Layout.pdb
