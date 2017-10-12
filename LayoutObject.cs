@@ -10,13 +10,21 @@ namespace RoomLayout
 {
     public class LayoutObject
     {
-        private static int _IDMax = 0;
+        public static int IDMax = 0;
+        private static SolidBrush _BrushBack = new SolidBrush(Color.FromArgb(150, 200, 220, 255));
+        private static StringFormat _DrawStringFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
+        /// <summary>
+        /// 是否重新取得繪製點
+        /// </summary>
         private bool _RebuildPoints = true;
 
-        private PointF[] _DrawPoints = new PointF[4];
+        private LayoutPoints _Points = new LayoutPoints();
+        /// <summary>
+        /// 繪製點
+        /// </summary>
         [Browsable(false)]
-        public PointF[] DrawPoints
+        public LayoutPoints Points
         {
             get
             {
@@ -25,98 +33,110 @@ namespace RoomLayout
                     double rotateH = Angle * Math.PI / 180F;
                     double rotateV = (Angle + 90) * Math.PI / 180F;
 
-                    float x = X * Scale;
-                    float y = Y * Scale;
-                    float x1 = (float)(Width / 2 * Math.Cos(rotateH)) * Scale; //寬度修正
-                    float y1 = (float)(Width / 2 * Math.Sin(rotateH)) * Scale; //寬度修正
-                    float x2 = (float)(Height / 2 * Math.Cos(rotateV)) * Scale; //高度修正
-                    float y2 = (float)(Height / 2 * Math.Sin(rotateV)) * Scale; //高度修正
-                    _DrawPoints[0] = new PointF(OffsetX + x - x1 + x2, OffsetY + y - y1 + y2);
-                    _DrawPoints[1] = new PointF(OffsetX + x + x1 + x2, OffsetY + y + y1 + y2);
-                    _DrawPoints[2] = new PointF(OffsetX + x + x1 - x2, OffsetY + y + y1 - y2);
-                    _DrawPoints[3] = new PointF(OffsetX + x - x1 - x2, OffsetY + y - y1 - y2);
+                    float widFixX = (float)(Width / 2F * Math.Cos(rotateH)); //寬度修正
+                    float widFixY = (float)(Width / 2F * Math.Sin(rotateH)); //寬度修正
+                    float heiFixX = (float)(Height / 2F * Math.Cos(rotateV)); //高度修正
+                    float heiFixY = (float)(Height / 2F * Math.Sin(rotateV)); //高度修正
 
-                    int fixX = 0, fixY = 0;
-                    float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
-                    float limitX = OffsetX + (ParentWidth * Scale);
-                    float limitY = OffsetY + (ParentHeight * Scale);
-                    foreach (PointF pots in _DrawPoints)
-                    {
-                        minX = Math.Min(minX, pots.X);
-                        minY = Math.Min(minY, pots.Y);
-                        maxX = Math.Max(maxX, pots.X);
-                        maxY = Math.Max(maxY, pots.Y);
-                    }
+                    float[] x = { X - widFixX + heiFixX,
+                                  X + widFixX + heiFixX,
+                                  X + widFixX - heiFixX,
+                                  X - widFixX - heiFixX};
+                    float[] y = { Y - widFixY + heiFixY,
+                                  Y + widFixY + heiFixY,
+                                  Y + widFixY - heiFixY,
+                                  Y - widFixY - heiFixY};
 
-                    if (minX < OffsetX)
+                    float minX = x.Min(),
+                          minY = y.Min(),
+                          maxX = x.Max(),
+                          maxY = y.Max();
+                    float fixX = 0, fixY = 0;
+
+                    if (minX < 0)
                     {
-                        fixX = (int)(OffsetX - minX);
+                        fixX = -(int)(minX * 2) / 2F;
                     }
-                    else if (maxX > limitX)
+                    else if (maxX > ParentWidth)
                     {
-                        fixX = -(int)(maxX - limitX);
+                        fixX = (int)((ParentWidth - maxX) * 2) / 2F;
                     }
 
-                    if (minY < OffsetY)
+                    if (minY < 0)
                     {
-                        fixY = (int)(OffsetY - minY);
+                        fixY = -(int)(minY * 2) / 2F;
                     }
-                    else if (maxY > limitY)
+                    else if (maxY > ParentHeight)
                     {
-                        fixY = -(int)(maxY - limitY);
+                        fixY = (int)((ParentHeight - maxY) * 2) / 2F;
                     }
 
-                    if (fixX != 0 || fixY != 0)
+                    for (int i = 0; i < 4; i++)
                     {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            _DrawPoints[i] = new PointF(_DrawPoints[i].X + fixX, _DrawPoints[i].Y + fixY);
-                        }
-                        _X += fixX;
-                        _Y += fixY;
+                        PointF origin = new PointF(x[i] + fixX, y[i] + fixY);
+                        _Points.Origin[i] = origin;
+                        _Points.ForDraw[i] = new PointF(ParentLeft + origin.X * Scale, ParentTop + origin.Y * Scale);
                     }
+                    _X += fixX;
+                    _Y += fixY;
                     _RebuildPoints = false;
                 }
-                return _DrawPoints;
+                return _Points;
             }
         }
 
-
-        [Description("ID"), DisplayName("0.索引")]
+        /// <summary>
+        /// 物件辨識碼
+        /// </summary>
+        [Description("ID"), DisplayName("索引"), Category("基本")]
         public int ID { get; private set; }
 
-        [Description("名稱"), DisplayName("1.名稱")]
+        /// <summary>
+        /// 物件名稱
+        /// </summary>
+        [Description("名稱"), DisplayName("名稱"), Category("基本")]
         public string Name { get; set; }
 
-        private int _X;
-        [Description("X座標"), DisplayName("2.X座標")]
-        public int X
+        private float _X;
+        /// <summary>
+        /// X座標
+        /// </summary>
+        [Description("X座標"), DisplayName("X座標"), Category("位置")]
+        public float X
         {
             get { return _X; }
             set
             {
+                value = (int)(value * 2) / 2F;
                 if (_X == value) return;
                 _X = value;
                 _RebuildPoints = true;
             }
         }
 
-        private int _Y;
-        [Description("Y座標"), DisplayName("3.Y座標")]
-        public int Y
+        private float _Y;
+        /// <summary>
+        /// Y座標
+        /// </summary>
+        [Description("Y座標"), DisplayName("Y座標"), Category("位置")]
+        public float Y
         {
             get { return _Y; }
             set
             {
+                value = (int)(value * 2) / 2F;
                 if (_Y == value) return;
                 _Y = value;
                 _RebuildPoints = true;
             }
         }
 
-        private int _Width;
-        [Description("寬度"), DisplayName("4.寬度")]
-        public int Width
+        private float _Width;
+        /// <summary>
+        /// 寬度
+        /// </summary>
+        [Description("寬度"), DisplayName("寬度"), Category("配置")]
+        public float Width
         {
             get { return _Width; }
             set
@@ -128,9 +148,12 @@ namespace RoomLayout
             }
         }
 
-        private int _Height;
-        [Description("高度"), DisplayName("5.高度")]
-        public int Height
+        private float _Height;
+        /// <summary>
+        /// 高度
+        /// </summary>
+        [Description("高度"), DisplayName("高度"), Category("配置")]
+        public float Height
         {
             get { return _Height; }
             set
@@ -143,7 +166,10 @@ namespace RoomLayout
         }
 
         private int _Angle;
-        [Description("角度"), DisplayName("6.角度")]
+        /// <summary>
+        /// 角度
+        /// </summary>
+        [Description("角度"), DisplayName("角度"), Category("配置")]
         public int Angle
         {
             get { return _Angle; }
@@ -164,31 +190,40 @@ namespace RoomLayout
             }
         }
 
-        private int _OffsetX;
+        private int _ParentLeft;
+        /// <summary>
+        /// 容器左上角X座標
+        /// </summary>
         [Browsable(false)]
-        public int OffsetX
+        public int ParentLeft
         {
-            get { return _OffsetX; }
+            get { return _ParentLeft; }
             set
             {
-                _OffsetX = value;
+                _ParentLeft = value;
                 _RebuildPoints = true;
             }
         }
 
-        private int _OffsetY;
+        /// <summary>
+        /// 容器左上角Y座標
+        /// </summary>
+        private int _ParentTop;
         [Browsable(false)]
-        public int OffsetY
+        public int ParentTop
         {
-            get { return _OffsetY; }
+            get { return _ParentTop; }
             set
             {
-                _OffsetY = value;
+                _ParentTop = value;
                 _RebuildPoints = true;
             }
         }
 
         private int _ParentWidth;
+        /// <summary>
+        /// 容器寬度(未縮放)
+        /// </summary>
         [Browsable(false)]
         public int ParentWidth
         {
@@ -201,6 +236,9 @@ namespace RoomLayout
         }
 
         private int _ParentHeight;
+        /// <summary>
+        /// 容器高度(未縮放)
+        /// </summary>
         [Browsable(false)]
         public int ParentHeight
         {
@@ -213,6 +251,9 @@ namespace RoomLayout
         }
 
         private float _Scale;
+        /// <summary>
+        /// 縮放值
+        /// </summary>
         [Browsable(false)]
         public float Scale
         {
@@ -224,7 +265,7 @@ namespace RoomLayout
             }
         }
 
-        public LayoutObject(int id, string name, int x, int y, int width, int height)
+        public LayoutObject(int id, string name, float x, float y, float width, float height)
         {
             ID = id;
             Name = name;
@@ -232,13 +273,13 @@ namespace RoomLayout
             Y = y;
             Width = width;
             Height = height;
-            _IDMax = Math.Max(_IDMax, ID);
+            IDMax = Math.Max(IDMax, ID);
         }
 
-        public LayoutObject(string name, int x, int y, int width, int height)
+        public LayoutObject(string name, float x, float y, float width, float height)
         {
-            _IDMax++;
-            ID = _IDMax;
+            IDMax++;
+            ID = IDMax;
             Name = name;
             X = x;
             Y = y;
@@ -246,72 +287,160 @@ namespace RoomLayout
             Height = height;
         }
 
-        private SolidBrush _BrushBack = new SolidBrush(Color.FromArgb(150, 200, 220, 255));
-        private StringFormat _DrawStringFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+        /// <summary>
+        /// 繪製本身
+        /// </summary>
+        /// <param name="g">Graphics物件</param>
         public void DrawSelf(Graphics g)
         {
-            PointF[] pots = DrawPoints;
+            PointF[] pots = Points.ForDraw;
             g.FillPolygon(_BrushBack, pots);
             g.DrawPolygon(Pens.RoyalBlue, pots);
 
-            Font font = new Font("微軟正黑體", Math.Min(Width, Height) / (Name.Length + 1) * Scale);
-            SizeF size = g.MeasureString("國", font);
-            double distance = Math.Max(size.Width, size.Height) * 0.75F;
-            PointF center = GetCenter();
+            bool sizeSwap = Height > Width;
+            float width = (sizeSwap ? Height : Width) * Scale;  //長邊
+            float height = (sizeSwap ? Width : Height) * Scale; //短邊
 
-            int angle = Angle;
-            if (Height > Width) angle +=90;
+            float fontSize = Math.Min(width / (Name.Length + 1), height) * 0.7F;
+            bool outside = false; //字是否放在框外
+            if (fontSize < 10)
+            {
+                fontSize = 10;
+                outside = true;
+            }
+
+            Font font = new Font("微軟正黑體", fontSize);
+            SizeF charSize = g.MeasureString("國", font);
+            double charDistance = outside ? fontSize * 1.5F : (width * 0.75F / Name.Length);
+
+            PointF drawCenter = GetDrawCenter();
+            int angle = sizeSwap ? Angle + 90 : Angle;
             if (angle > 180)
             {
                 angle = (angle % 180) - 180;
             }
 
+            double rotate2 = (angle + 90) * Math.PI / 180F;
             if (angle > 145) angle += 180;
             else if ((angle < -45)) angle += 180;
 
             double rotate = angle * Math.PI / 180F;
+            float charFixX = (float)(charDistance * Math.Cos(rotate)); //每個字元偏移X
+            float charFixY = (float)(charDistance * Math.Sin(rotate)); //每個字元偏移Y
+            float fixX = 0, fixY = 0;
+            if (outside)
+            {
+                fixX = (float)((height * 0.7F + 15) * Math.Cos(rotate2));
+                fixY = (float)((height * 0.7F + 15) * Math.Sin(rotate2));
+                float fixX2 = (float)((height * 0.7F + 5) * Math.Cos(rotate2));
+                float fixY2 = (float)((height * 0.7F + 5) * Math.Sin(rotate2));
+                g.DrawLine(Pens.RoyalBlue, drawCenter, new PointF(drawCenter.X + fixX2, drawCenter.Y + fixY2));
+            }
 
-            float fixX = (float)(distance * Math.Cos(rotate));
-            float fixY = (float)(distance * Math.Sin(rotate));
-            float drawX = center.X - fixX * (Name.Length - 1) / 2;
-            float drawY = center.Y - fixY * (Name.Length - 1) / 2;
+            float drawX = drawCenter.X - (charFixX * (Name.Length - 1) / 2) + fixX;
+            float drawY = drawCenter.Y - (charFixY * (Name.Length - 1) / 2) + fixY;
             for (int i = 0; i < Name.Length; i++)
             {
                 g.DrawString(Name[i].ToString(), font, Brushes.RoyalBlue, new PointF(drawX, drawY), _DrawStringFormat);
-                drawX += fixX;
-                drawY += fixY;
+                drawX += charFixX;
+                drawY += charFixY;
             }
-
-
-
-
-
         }
 
-        public bool InRectangle(PointF point)
+        /// <summary>
+        /// 取得點是否在繪製圖形內
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public bool IsInsideDraw(PointF point)
         {
-            PointF[] pots = DrawPoints;
+            PointF[] pots = Points.ForDraw;
             return Multiply(point, pots[0], pots[1]) * Multiply(point, pots[3], pots[2]) <= 0 &&
                    Multiply(point, pots[3], pots[0]) * Multiply(point, pots[2], pots[1]) <= 0;
         }
 
-        public bool IsIntersect(LayoutObject layoutObject)
+        /// <summary>
+        /// 取得點是否在原始圖形內
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public bool IsInsideOrigin(PointF point)
         {
-            PointF[] pots1 = DrawPoints;
-            PointF[] pots2 = layoutObject.DrawPoints;
+            PointF[] pots = Points.Origin;
+            return Multiply(point, pots[0], pots[1]) * Multiply(point, pots[3], pots[2]) <= 0 &&
+                   Multiply(point, pots[3], pots[0]) * Multiply(point, pots[2], pots[1]) <= 0;
+
+        }
+        /// <summary>
+        /// 取得是否與圖形相交
+        /// </summary>
+        /// <param name="layoutObject">圖形</param>
+        /// <returns>是否相交</returns>
+        public bool IsIntersectOrigin(LayoutObject layoutObject)
+        {
+            PointF[] pots1 = Points.Origin;
+            PointF[] pots2 = layoutObject.Points.Origin;
             for (int i = 0; i < 4; i++)
             {
-                if (layoutObject.InRectangle(pots1[i]))
+                int i2 = i < 3 ? i + 1 : 0;
+                for (int j = 0; j < 4; j++)
                 {
-                    return true;
-                }
-
-                if (InRectangle(pots2[i]))
-                {
-                    return true;
+                    int j2 = j < 3 ? j + 1 : 0;
+                    if (Function.IsLineCross(pots1[i], pots1[i2], pots2[j], pots2[j2]))
+                    {
+                        return true;
+                    }
                 }
             }
+
+            if (layoutObject.IsInsideOrigin(pots1[0]))
+            {
+                return true;
+            }
+
+            if (IsInsideOrigin(pots2[0]))
+            {
+                return true;
+            }
             return false;
+        }
+
+        public bool Move(float moveX, float moveY)
+        {
+            PointF[] pots = Points.Origin;
+
+            float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+            foreach (PointF pot in pots)
+            {
+                minX = Math.Min(minX, pot.X);
+                minY = Math.Min(minY, pot.Y);
+                maxX = Math.Max(maxX, pot.X);
+                maxY = Math.Max(maxY, pot.Y);
+            }
+
+            if (minX + moveX < 0 ||
+                maxX + moveX > ParentWidth ||
+                minY + moveY < 0 ||
+                maxY + moveY > ParentHeight)
+            {
+                return false;
+            }
+            else
+            {
+                X += moveX;
+                Y += moveY;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 取得中心點
+        /// </summary>
+        /// <returns></returns>
+        public PointF GetDrawCenter()
+        {
+            PointF[] pots = Points.ForDraw;
+            return new PointF((pots[0].X + pots[2].X) / 2, (pots[0].Y + pots[2].Y) / 2);
         }
 
         public static double Multiply(PointF p1, PointF p2, PointF p0)
@@ -319,10 +448,26 @@ namespace RoomLayout
             return ((p1.X - p0.X) * (p2.Y - p0.Y) - (p2.X - p0.X) * (p1.Y - p0.Y));
         }
 
-        public PointF GetCenter()
+        /// <summary>
+        /// 記錄配置物件座標
+        /// </summary>
+        public class LayoutPoints
         {
-            PointF[] pots = DrawPoints;
-            return new PointF((pots[0].X + pots[2].X) / 2, (pots[0].Y + pots[2].Y) / 2);
+            /// <summary>
+            /// 原始座標組
+            /// </summary>
+            public PointF[] Origin { get; private set; }
+
+            /// <summary>
+            /// 縮放後座標組
+            /// </summary>
+            public PointF[] ForDraw { get; private set; }
+
+            public LayoutPoints()
+            {
+                Origin = new PointF[4];
+                ForDraw = new PointF[4];
+            }
         }
     }
 }
