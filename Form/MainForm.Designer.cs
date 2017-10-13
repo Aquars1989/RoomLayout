@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.picMain = new System.Windows.Forms.PictureBox();
             this.pgPropertys = new System.Windows.Forms.PropertyGrid();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -157,11 +158,14 @@
             // 
             // tbCatch
             // 
+            this.tbCatch.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.tbCatch.Location = new System.Drawing.Point(0, 0);
+            this.tbCatch.MaxLength = 0;
             this.tbCatch.Name = "tbCatch";
             this.tbCatch.Size = new System.Drawing.Size(0, 22);
             this.tbCatch.TabIndex = 4;
             this.tbCatch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCatch_KeyDown);
+            this.tbCatch.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbCatch_KeyUp);
             // 
             // MainForm
             // 
@@ -172,12 +176,11 @@
             this.Controls.Add(this.picMain);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pgPropertys);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             ((System.ComponentModel.ISupportInitialize)(this.picMain)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();

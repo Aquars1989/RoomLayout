@@ -5,3 +5,10 @@ E:\VsProject\RoomLayout\RoomLayout\obj\Release\RoomLayout.Properties.Resources.r
 E:\VsProject\RoomLayout\RoomLayout\obj\Release\RoomLayout.csproj.GenerateResource.Cache
 E:\VsProject\RoomLayout\RoomLayout\obj\Release\Layout.exe
 E:\VsProject\RoomLayout\RoomLayout\obj\Release\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\Layout.exe
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\Release\Layout.exe
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\Release\Layout.pdb
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.MainForm.resources
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.Properties.Resources.resources
+C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.csproj.GenerateResource.Cache

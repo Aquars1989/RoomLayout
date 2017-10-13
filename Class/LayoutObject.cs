@@ -10,8 +10,14 @@ namespace RoomLayout
 {
     public class LayoutObject
     {
+        /// <summary>
+        /// 最新序號
+        /// </summary>
         public static int IDMax = 0;
-        private static SolidBrush _BrushBack = new SolidBrush(Color.FromArgb(150, 200, 220, 255));
+
+        /// <summary>
+        /// 繪製文字設定
+        /// </summary>
         private static StringFormat _DrawStringFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
         /// <summary>
@@ -88,7 +94,8 @@ namespace RoomLayout
         /// <summary>
         /// 物件辨識碼
         /// </summary>
-        [Description("ID"), DisplayName("索引"), Category("基本")]
+        //[Description("ID"), DisplayName("索引"), Category("基本")]
+        [Browsable(false)]
         public int ID { get; private set; }
 
         /// <summary>
@@ -101,7 +108,7 @@ namespace RoomLayout
         /// <summary>
         /// X座標
         /// </summary>
-        [Description("X座標"), DisplayName("X座標"), Category("位置")]
+        [Description("物件中心X座標"), DisplayName("X座標"), Category("位置")]
         public float X
         {
             get { return _X; }
@@ -118,7 +125,7 @@ namespace RoomLayout
         /// <summary>
         /// Y座標
         /// </summary>
-        [Description("Y座標"), DisplayName("Y座標"), Category("位置")]
+        [Description("物件中心Y座標"), DisplayName("Y座標"), Category("位置")]
         public float Y
         {
             get { return _Y; }
@@ -169,7 +176,7 @@ namespace RoomLayout
         /// <summary>
         /// 角度
         /// </summary>
-        [Description("角度"), DisplayName("角度"), Category("配置")]
+        [Description("角度(+-180)"), DisplayName("角度"), Category("配置")]
         public int Angle
         {
             get { return _Angle; }
@@ -291,59 +298,67 @@ namespace RoomLayout
         /// 繪製本身
         /// </summary>
         /// <param name="g">Graphics物件</param>
-        public void DrawSelf(Graphics g)
+        /// <param name="backColor">背景色</param>
+        /// <param name="borderColoe">框線顏色</param>
+        /// <param name="textColor">文字顏色</param>
+        public void DrawSelf(Graphics g, Color backColor, Color borderColoe, Color textColor)
         {
-            PointF[] pots = Points.ForDraw;
-            g.FillPolygon(_BrushBack, pots);
-            g.DrawPolygon(Pens.RoyalBlue, pots);
-
-            bool sizeSwap = Height > Width;
-            float width = (sizeSwap ? Height : Width) * Scale;  //長邊
-            float height = (sizeSwap ? Width : Height) * Scale; //短邊
-
-            float fontSize = Math.Min(width / (Name.Length + 1), height) * 0.7F;
-            bool outside = false; //字是否放在框外
-            if (fontSize < 10)
+            using (Pen penBorder = new Pen(borderColoe))
+            using (SolidBrush brushBack = new SolidBrush(backColor))
+            using (SolidBrush brushText = new SolidBrush(textColor))
             {
-                fontSize = 10;
-                outside = true;
-            }
+                PointF[] pots = Points.ForDraw;
+                g.FillPolygon(brushBack, pots);
+                g.DrawPolygon(penBorder, pots);
 
-            Font font = new Font("微軟正黑體", fontSize);
-            SizeF charSize = g.MeasureString("國", font);
-            double charDistance = outside ? fontSize * 1.5F : (width * 0.75F / Name.Length);
+                bool sizeSwap = Height > Width;
+                float width = (sizeSwap ? Height : Width) * Scale;  //長邊
+                float height = (sizeSwap ? Width : Height) * Scale; //短邊
 
-            PointF drawCenter = GetDrawCenter();
-            int angle = sizeSwap ? Angle + 90 : Angle;
-            if (angle > 180)
-            {
-                angle = (angle % 180) - 180;
-            }
+                float fontSize = Math.Min(width / (Name.Length + 1), height) * 0.7F;
+                bool outside = false; //字是否放在框外
+                if (fontSize < 10)
+                {
+                    fontSize = 10;
+                    outside = true;
+                }
 
-            double rotate2 = (angle + 90) * Math.PI / 180F;
-            if (angle > 145) angle += 180;
-            else if ((angle < -45)) angle += 180;
+                Font font = new Font("微軟正黑體", fontSize);
+                SizeF charSize = g.MeasureString("國", font);
+                double charDistance = outside ? fontSize * 1.5F : (width * 0.75F / Name.Length);
 
-            double rotate = angle * Math.PI / 180F;
-            float charFixX = (float)(charDistance * Math.Cos(rotate)); //每個字元偏移X
-            float charFixY = (float)(charDistance * Math.Sin(rotate)); //每個字元偏移Y
-            float fixX = 0, fixY = 0;
-            if (outside)
-            {
-                fixX = (float)((height * 0.7F + 15) * Math.Cos(rotate2));
-                fixY = (float)((height * 0.7F + 15) * Math.Sin(rotate2));
-                float fixX2 = (float)((height * 0.7F + 5) * Math.Cos(rotate2));
-                float fixY2 = (float)((height * 0.7F + 5) * Math.Sin(rotate2));
-                g.DrawLine(Pens.RoyalBlue, drawCenter, new PointF(drawCenter.X + fixX2, drawCenter.Y + fixY2));
-            }
+                PointF drawCenter = GetDrawCenter();
+                int angle = sizeSwap ? Angle + 90 : Angle;
+                if (angle > 180)
+                {
+                    angle = (angle % 180) - 180;
+                }
 
-            float drawX = drawCenter.X - (charFixX * (Name.Length - 1) / 2) + fixX;
-            float drawY = drawCenter.Y - (charFixY * (Name.Length - 1) / 2) + fixY;
-            for (int i = 0; i < Name.Length; i++)
-            {
-                g.DrawString(Name[i].ToString(), font, Brushes.RoyalBlue, new PointF(drawX, drawY), _DrawStringFormat);
-                drawX += charFixX;
-                drawY += charFixY;
+                double rotate2 = (angle + 90) * Math.PI / 180F;
+                if (angle > 145) angle += 180;
+                else if ((angle < -45)) angle += 180;
+
+                double rotate = angle * Math.PI / 180F;
+                float charFixX = (float)(charDistance * Math.Cos(rotate)); //每個字元偏移X
+                float charFixY = (float)(charDistance * Math.Sin(rotate)); //每個字元偏移Y
+                float fixX = 0, fixY = 0;
+                if (outside)
+                {
+                    fixX = (float)((height * 0.7F + 15) * Math.Cos(rotate2));
+                    fixY = (float)((height * 0.7F + 15) * Math.Sin(rotate2));
+                    float fixX2 = (float)((height * 0.7F + 5) * Math.Cos(rotate2));
+                    float fixY2 = (float)((height * 0.7F + 5) * Math.Sin(rotate2));
+                    g.DrawLine(penBorder, drawCenter, new PointF(drawCenter.X + fixX2, drawCenter.Y + fixY2));
+                }
+
+                float drawX = drawCenter.X - (charFixX * (Name.Length - 1) / 2) + fixX;
+                float drawY = drawCenter.Y - (charFixY * (Name.Length - 1) / 2) + fixY;
+                for (int i = 0; i < Name.Length; i++)
+                {
+                    g.DrawString(Name[i].ToString(), font, brushText, new PointF(drawX, drawY), _DrawStringFormat);
+                    drawX += charFixX;
+                    drawY += charFixY;
+                }
             }
         }
 
@@ -354,9 +369,7 @@ namespace RoomLayout
         /// <returns></returns>
         public bool IsInsideDraw(PointF point)
         {
-            PointF[] pots = Points.ForDraw;
-            return Multiply(point, pots[0], pots[1]) * Multiply(point, pots[3], pots[2]) <= 0 &&
-                   Multiply(point, pots[3], pots[0]) * Multiply(point, pots[2], pots[1]) <= 0;
+            return Function.IsPointInside(Points.ForDraw, point);
         }
 
         /// <summary>
@@ -366,11 +379,9 @@ namespace RoomLayout
         /// <returns></returns>
         public bool IsInsideOrigin(PointF point)
         {
-            PointF[] pots = Points.Origin;
-            return Multiply(point, pots[0], pots[1]) * Multiply(point, pots[3], pots[2]) <= 0 &&
-                   Multiply(point, pots[3], pots[0]) * Multiply(point, pots[2], pots[1]) <= 0;
-
+            return Function.IsPointInside(Points.Origin, point);
         }
+
         /// <summary>
         /// 取得是否與圖形相交
         /// </summary>
@@ -378,33 +389,15 @@ namespace RoomLayout
         /// <returns>是否相交</returns>
         public bool IsIntersectOrigin(LayoutObject layoutObject)
         {
-            PointF[] pots1 = Points.Origin;
-            PointF[] pots2 = layoutObject.Points.Origin;
-            for (int i = 0; i < 4; i++)
-            {
-                int i2 = i < 3 ? i + 1 : 0;
-                for (int j = 0; j < 4; j++)
-                {
-                    int j2 = j < 3 ? j + 1 : 0;
-                    if (Function.IsLineCross(pots1[i], pots1[i2], pots2[j], pots2[j2]))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            if (layoutObject.IsInsideOrigin(pots1[0]))
-            {
-                return true;
-            }
-
-            if (IsInsideOrigin(pots2[0]))
-            {
-                return true;
-            }
-            return false;
+            return Function.IsIntersect(Points.Origin, layoutObject.Points.Origin);
         }
 
+        /// <summary>
+        /// 移動指定數值,直到超出邊界
+        /// </summary>
+        /// <param name="moveX">X軸移動值</param>
+        /// <param name="moveY">Y軸移動值</param>
+        /// <returns>是否移動成功</returns>
         public bool Move(float moveX, float moveY)
         {
             PointF[] pots = Points.Origin;
@@ -418,10 +411,10 @@ namespace RoomLayout
                 maxY = Math.Max(maxY, pot.Y);
             }
 
-            if (minX + moveX < 0 ||
-                maxX + moveX > ParentWidth ||
-                minY + moveY < 0 ||
-                maxY + moveY > ParentHeight)
+            if ((moveX < 0 && minX + moveX < 0) ||
+                (moveX > 0 && maxX + moveX > ParentWidth) ||
+                (moveY < 0 && minY + moveY < 0) ||
+                (moveY > 0 && maxY + moveY > ParentHeight))
             {
                 return false;
             }
@@ -441,11 +434,6 @@ namespace RoomLayout
         {
             PointF[] pots = Points.ForDraw;
             return new PointF((pots[0].X + pots[2].X) / 2, (pots[0].Y + pots[2].Y) / 2);
-        }
-
-        public static double Multiply(PointF p1, PointF p2, PointF p0)
-        {
-            return ((p1.X - p0.X) * (p2.Y - p0.Y) - (p2.X - p0.X) * (p1.Y - p0.Y));
         }
 
         /// <summary>
