@@ -17,7 +17,7 @@ namespace RoomLayout
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            if (args.Length > 1 && !string.IsNullOrWhiteSpace(args[0]) && Path.GetExtension(args[0]).ToLower() == "rld")
+            if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]) && Path.GetExtension(args[0]).ToLower() == ".rld")
             {
                 Global.FilePath = args[0];
             }

@@ -311,7 +311,7 @@ namespace RoomLayout
                 Scale = MainScale
             };
             _Objects.Add(newObj);
-            lvList.Items.Add(new ListViewItem(string.Format("{0}：{1}", newObj.ID.ToString().PadLeft(3, '0'), newObj.Name)) { Tag = newObj.ID });
+            lvList.Items.Add(new ListViewItem(string.Format("{0}", newObj.Name)) { Tag = newObj.ID });
             picMain.Invalidate();
             SaveData(true);
         }
@@ -541,7 +541,7 @@ namespace RoomLayout
             foreach (LayoutObject layoutObject in _SelectedObjects)
             {
                 e.Graphics.SmoothingMode = layoutObject.Angle % 90 == 0 ? SmoothingMode.None : SmoothingMode.HighQuality;
-                e.Graphics.DrawLines(_PenSelected, layoutObject.Points.ForDraw);
+                e.Graphics.DrawPolygon(_PenSelected, layoutObject.Points.ForDraw);
             }
 
             if (_DragMode == DragMode.Select)
@@ -552,7 +552,7 @@ namespace RoomLayout
                                  new Point(_DragBaseX,_DragToY)};
                 e.Graphics.DrawPolygon(_PenSelected, pots);
             }
-
+            
             if (_HoverObject != null && _DragMode == DragMode.None)
             {
                 Point screenBase = picMain.PointToScreen(new Point(0, 0));

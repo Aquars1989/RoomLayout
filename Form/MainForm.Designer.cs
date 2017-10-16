@@ -150,7 +150,7 @@
             this.lvList.OwnerDraw = true;
             this.lvList.Size = new System.Drawing.Size(190, 515);
             this.lvList.TabIndex = 2;
-            this.lvList.TileSize = new System.Drawing.Size(170, 30);
+            this.lvList.TileSize = new System.Drawing.Size(150, 30);
             this.lvList.UseCompatibleStateImageBehavior = false;
             this.lvList.View = System.Windows.Forms.View.Tile;
             this.lvList.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.lvList_DrawItem);
