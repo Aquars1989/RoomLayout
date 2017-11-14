@@ -12,4 +12,3 @@ C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\bin\
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.MainForm.resources
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.Properties.Resources.resources
 C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.csproj.GenerateResource.Cache
-C:\Users\Aquars\Documents\Visual Studio 2013\Projects\RoomLayout\RoomLayout\obj\Release\RoomLayout.csprojResolveAssemblyReference.cache

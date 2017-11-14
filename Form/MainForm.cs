@@ -70,12 +70,17 @@ namespace RoomLayout
         /// <summary>
         /// 筆刷-提示訊息
         /// </summary>
-        private static SolidBrush _BrushTip = new SolidBrush(Color.Teal);
+        //private static SolidBrush _BrushTip = new SolidBrush(Color.Teal);
+
+        /// <summary>
+        /// 畫筆-提示訊息外框
+        /// </summary>
+        //private static Pen _PenTipBorder = new Pen(Color.Teal);
 
         /// <summary>
         /// 筆刷-提示訊息背景
         /// </summary>
-        private static SolidBrush _BrushTipBack = new SolidBrush(Color.FromArgb(220, 255, 255, 200));
+        //private static SolidBrush _BrushTipBack = new SolidBrush(Color.FromArgb(150, 255, 255, 200));
 
         /// <summary>
         /// 字型-提示訊息
@@ -85,7 +90,9 @@ namespace RoomLayout
         /// <summary>
         /// 配置-提示訊息
         /// </summary>
-        private static StringFormat _FormatTip = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center };
+        private static StringFormat _FormatTip = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, };
+
+        private static float _TipOpacity = 0;
         #endregion
 
         #region ===== 拖曳相關 =====
@@ -128,11 +135,6 @@ namespace RoomLayout
         /// 拖曳模式是否造成變動
         /// </summary>
         private bool _DragChanged = false;
-
-        /// <summary>
-        /// 強制設定
-        /// </summary>
-        private bool _DragHardSet = false;
         #endregion
 
         #region ===== 配置物件 =====
@@ -246,6 +248,24 @@ namespace RoomLayout
                  }
                  picMain_SizeChanged(picMain, null);
              };
+
+            Timer tm = new Timer() { Interval = 50, Enabled = true };
+            tm.Tick += (x, e) =>
+            {
+                float oldOpac = _TipOpacity;
+                if (_HoverObject == null || _DragMode != DragMode.None)
+                {
+                    if (_TipOpacity > -1) _TipOpacity = Math.Max(_TipOpacity - 0.3F, -1);
+                }
+                else
+                {
+                    if (_TipOpacity < 1) _TipOpacity = Math.Min(_TipOpacity + 0.1F, 1);
+                }
+                if (oldOpac != _TipOpacity && (oldOpac > 0 || _TipOpacity > 0))
+                {
+                    picMain.Refresh();
+                }
+            };
             LoadData();
         }
 
@@ -419,11 +439,11 @@ namespace RoomLayout
                     moveX = e.Control ? 1 : 5;
                     break;
                 case Keys.Space:
-                    if (_DragMode == DragMode.Move || _DragMode == DragMode.Rotate)
-                    {
-                        _DragHardSet = true;
-                        picMain.Invalidate();
-                    }
+                    bool impact = _SelectedObjects.Any((x) => { return x.ImpactCheck; });
+                    _SelectedObjects.ForEach((x) => { x.ImpactCheck = !impact; });
+                    pgPropertys.Refresh();
+                    picMain.Refresh();
+                    SaveData(true);
                     break;
             }
 
@@ -454,17 +474,6 @@ namespace RoomLayout
             {
                 SaveData(true);
                 _KeyDownMove = false;
-            }
-
-            switch (e.KeyCode)
-            {
-                case Keys.Space:
-                    if (_DragMode == DragMode.Move || _DragMode == DragMode.Rotate)
-                    {
-                        _DragHardSet = false;
-                        picMain.Invalidate();
-                    }
-                    break;
             }
         }
         #endregion
@@ -501,9 +510,9 @@ namespace RoomLayout
             {
                 e.Graphics.SmoothingMode = layoutObject.Angle % 90 == 0 ? SmoothingMode.None : SmoothingMode.HighQuality;
 
+                bool drawEmpty = !layoutObject.ImpactCheck;
                 if (_SelectedObjects.Contains(layoutObject))
                 {
-                    bool drawEmpty = (_DragMode == DragMode.Move || _DragMode == DragMode.Rotate) && _DragHardSet;
                     layoutObject.DrawSelf(e.Graphics, drawEmpty ? Color.Empty : Color.FromArgb(150, 255, 220, 220), Color.Red, Color.Red);
                     switch (_DragMode)
                     {
@@ -533,16 +542,16 @@ namespace RoomLayout
                 }
                 else
                 {
-                    layoutObject.DrawSelf(e.Graphics, Color.FromArgb(150, 200, 220, 255), Color.RoyalBlue, Color.RoyalBlue);
+                    layoutObject.DrawSelf(e.Graphics, drawEmpty ? Color.Empty : Color.FromArgb(150, 200, 220, 255), Color.RoyalBlue, Color.RoyalBlue);
                 }
             }
 
-            //繪製選取外框
-            foreach (LayoutObject layoutObject in _SelectedObjects)
-            {
-                e.Graphics.SmoothingMode = layoutObject.Angle % 90 == 0 ? SmoothingMode.None : SmoothingMode.HighQuality;
-                e.Graphics.DrawPolygon(_PenSelected, layoutObject.Points.ForDraw);
-            }
+            ////繪製選取外框
+            //foreach (LayoutObject layoutObject in _SelectedObjects)
+            //{
+            //    e.Graphics.SmoothingMode = layoutObject.Angle % 90 == 0 ? SmoothingMode.None : SmoothingMode.HighQuality;
+            //    e.Graphics.DrawPolygon(_PenSelected, layoutObject.Points.ForDraw);
+            //}
 
             if (_DragMode == DragMode.Select)
             {
@@ -552,8 +561,8 @@ namespace RoomLayout
                                  new Point(_DragBaseX,_DragToY)};
                 e.Graphics.DrawPolygon(_PenSelected, pots);
             }
-            
-            if (_HoverObject != null && _DragMode == DragMode.None)
+
+            if (_TipOpacity > 0)
             {
                 Point screenBase = picMain.PointToScreen(new Point(0, 0));
                 string tip;
@@ -561,7 +570,8 @@ namespace RoomLayout
                 {
                     tip = "左鍵：移動選取物件\n" +
                           "右鍵：旋轉選取物件\n" +
-                          "Ctrl+左鍵：取消選取";
+                          "Ctrl+左鍵：取消選取\n" +
+                          "空白鍵：切換碰撞";
                 }
                 else
                 {
@@ -570,9 +580,21 @@ namespace RoomLayout
                           "Ctrl+左鍵：加入選取";
                 }
                 SizeF tipSize = e.Graphics.MeasureString(tip, _FontTip);
-                RectangleF tipRect = new RectangleF(Cursor.Position.X - screenBase.X + 15, Cursor.Position.Y - screenBase.Y, tipSize.Width, tipSize.Height + 5);
-                e.Graphics.FillRectangle(_BrushTipBack, tipRect);
-                e.Graphics.DrawString(tip, _FontTip, _BrushTip, tipRect, _FormatTip);
+                Rectangle tipRect = new Rectangle(Cursor.Position.X - (int)screenBase.X + 20, Cursor.Position.Y - (int)screenBase.Y, (int)tipSize.Width + 5, (int)tipSize.Height + 5);
+                Rectangle tipBackRect = new Rectangle(Cursor.Position.X - (int)screenBase.X + 15, Cursor.Position.Y - (int)screenBase.Y, (int)tipSize.Width + 10, (int)tipSize.Height + 5);
+                //e.Graphics.FillRectangle(_BrushTipBack, tipBackRect);
+                //e.Graphics.DrawRectangle(_PenTipBorder, tipBackRect);
+                //e.Graphics.DrawString(tip, _FontTip, _BrushTip, tipRect, _FormatTip);
+
+
+                using (SolidBrush brushTip = new SolidBrush(Color.FromArgb((int)(_TipOpacity * 255), 0, 120, 120)))
+                using (Pen penTipBorder = new Pen(Color.FromArgb((int)(_TipOpacity * 255), 0, 120, 120)))
+                using (SolidBrush brushTipBack = new SolidBrush(Color.FromArgb((int)(_TipOpacity * 200), 255, 255, 200)))
+                {
+                    e.Graphics.FillRectangle(brushTipBack, tipBackRect);
+                    e.Graphics.DrawRectangle(penTipBorder, tipBackRect);
+                    e.Graphics.DrawString(tip, _FontTip, brushTip, tipRect, _FormatTip);
+                }
             }
         }
 
@@ -592,7 +614,6 @@ namespace RoomLayout
                                 _DragBaseY = e.Y;
                                 _DragChanged = false;
                                 _DragObject = _HoverObject;
-                                _DragHardSet = false;
                                 picMain.Cursor = _NullCursor;
                                 break;
                             default:
@@ -625,23 +646,33 @@ namespace RoomLayout
 
                         if (moveX == 0 && moveY == 0) return;
 
+                        bool tryFirst = false;
                         do
                         {
                             if (MoveSelectedObject(moveX, moveY))
                             {
                                 _DragChanged = true;
-                                pgPropertys.Refresh();
-                                picMain.Refresh();
-                                break;
+                                if (tryFirst)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    moveX = (int)moveX / 2F;
+                                    moveY = (int)moveY / 2F;
+                                }
                             }
                             else
                             {
                                 moveX = (int)moveX / 2F;
                                 moveY = (int)moveY / 2F;
+                                tryFirst = false;
                             }
                         }
                         while (moveX != 0 || moveY != 0);
 
+                        pgPropertys.Refresh();
+                        picMain.Refresh();
                         Cursor.Position = new Point(Cursor.Position.X - (e.X - _DragBaseX), Cursor.Position.Y - (e.Y - _DragBaseY));
                         //_DragBaseX = e.X;
                         //_DragBaseY = e.Y;
@@ -665,11 +696,11 @@ namespace RoomLayout
 
                             oldXY.Add(new PointF(oldX, oldY));
                             oldAngles.Add(oldAngle);
-                            if (!_DragHardSet)
+                            if (layoutObject.ImpactCheck)
                             {
                                 foreach (LayoutObject chkObject in _Objects)
                                 {
-                                    if (!_SelectedObjects.Contains(chkObject) && chkObject.IsIntersectOrigin(layoutObject))
+                                    if (!_SelectedObjects.Contains(chkObject) && chkObject.ImpactCheck && chkObject.IsIntersectOrigin(layoutObject))
                                     {
                                         resume = true;
                                         break;
@@ -747,7 +778,6 @@ namespace RoomLayout
                                 _DragBaseY = e.Y;
                                 _DragChanged = false;
                                 _DragObject = _HoverObject;
-                                _DragHardSet = false;
                                 picMain.Cursor = _NullCursor;
                             }
                         }
@@ -775,7 +805,6 @@ namespace RoomLayout
                             picMain.Cursor = _NullCursor;
                             _DragChanged = false;
                             picMain.Invalidate();
-                            _DragHardSet = false;
                         }
                     }
                     break;
@@ -796,21 +825,27 @@ namespace RoomLayout
                     }
                     break;
                 case DragMode.Select:
-                    PointF[] pots = { new Point(_DragBaseX,_DragBaseY),
+                    if (_DragBaseX == _DragToX && _DragBaseY == _DragToY)
+                    {
+                        ClearSelectObjects();
+                    }
+                    else
+                    {
+                        PointF[] pots = { new Point(_DragBaseX,_DragBaseY),
                                       new Point(_DragToX,_DragBaseY),
                                       new Point(_DragToX,_DragToY),
                                       new Point(_DragBaseX,_DragToY)};
 
-                    List<int> selectID = new List<int>();
-                    foreach (LayoutObject lo in _Objects)
-                    {
-                        if (Function.IsIntersect(lo.Points.ForDraw, pots))
+                        List<int> selectID = new List<int>();
+                        foreach (LayoutObject lo in _Objects)
                         {
-                            selectID.Add(lo.ID);
+                            if (Function.IsIntersect(lo.Points.ForDraw, pots))
+                            {
+                                selectID.Add(lo.ID);
+                            }
                         }
+                        SetSelectObjects(selectID);
                     }
-
-                    SetSelectObjects(selectID);
                     break;
             }
 
@@ -878,7 +913,7 @@ namespace RoomLayout
             write.Add(string.Format("{0}x{1}", _MainSize.Width, _MainSize.Height));
             foreach (LayoutObject layoutObject in _Objects)
             {
-                write.Add(string.Format("{0},{1},{2},{3},{4},{5}", layoutObject.Name, layoutObject.X, layoutObject.Y, layoutObject.Width, layoutObject.Height, layoutObject.Angle));
+                write.Add(string.Format("{0},{1},{2},{3},{4},{5},{6}", layoutObject.Name, layoutObject.X, layoutObject.Y, layoutObject.Width, layoutObject.Height, layoutObject.Angle, layoutObject.ImpactCheck ? "1" : "0"));
             }
             File.WriteAllLines(Global.FilePath, write);
             if (backUp)
@@ -933,13 +968,13 @@ namespace RoomLayout
             for (int i = 1; i < lines.Count; i++)
             {
                 string[] values = lines[i].Split(',');
-                if (values.Length != 6) continue;
+                if (values.Length != 7) continue;
 
                 float x, y, objWidth, objHeight;
-                int angle;
+                int angle, impact;
                 if (float.TryParse(values[1], out x) && float.TryParse(values[2], out y) &&
                     float.TryParse(values[3], out objWidth) && float.TryParse(values[4], out objHeight) &&
-                    int.TryParse(values[5], out angle))
+                    int.TryParse(values[5], out angle) && int.TryParse(values[6], out impact))
                 {
                     _Objects.Add(new LayoutObject(values[0], x, y, objWidth, objHeight)
                     {
@@ -948,7 +983,8 @@ namespace RoomLayout
                         ParentTop = _DrawPaddingTop,
                         Scale = MainScale,
                         ParentWidth = MainSize.Width,
-                        ParentHeight = MainSize.Height
+                        ParentHeight = MainSize.Height,
+                        ImpactCheck = impact == 1
                     });
                 }
             }
@@ -1154,11 +1190,11 @@ namespace RoomLayout
                 }
 
                 oldXY.Add(new PointF(oldX, oldY));
-                if (!_DragHardSet)
+                if (layoutObject.ImpactCheck)
                 {
                     foreach (LayoutObject chkObject in _Objects)
                     {
-                        if (!_SelectedObjects.Contains(chkObject) && layoutObject.IsIntersectOrigin(chkObject))
+                        if (!_SelectedObjects.Contains(chkObject) && chkObject.ImpactCheck && layoutObject.IsIntersectOrigin(chkObject))
                         {
                             resume = true;
                             break;
@@ -1268,6 +1304,7 @@ namespace RoomLayout
                 get { return _Width; }
                 set
                 {
+                    if (value < 50) value = 50;
                     if (_Width == value) return;
                     _Width = value;
                     OnSizeChanged();
@@ -1281,6 +1318,7 @@ namespace RoomLayout
                 get { return _Height; }
                 set
                 {
+                    if (value < 50) value = 50;
                     if (_Height == value) return;
                     _Height = value;
                     OnSizeChanged();
@@ -1289,15 +1327,15 @@ namespace RoomLayout
 
             public SizeSet(int width, int height)
             {
-                _Width = width;
-                _Height = height;
+                _Width = Math.Max(width, 50);
+                _Height = Math.Max(height, 50);
                 OnSizeChanged();
             }
 
             public void SetSize(int width, int height)
             {
-                _Width = width;
-                _Height = height;
+                _Width = Math.Max(width, 50);
+                _Height = Math.Max(height, 50);
                 OnSizeChanged();
             }
         }

@@ -67,18 +67,39 @@ namespace RoomLayout
                         return true;
                     }
                 }
+
+                if (Function.IsLineCross(points1[i], points1[i2], points2[0], points2[2]) ||
+                    Function.IsLineCross(points1[i], points1[i2], points2[1], points2[3]))
+                {
+                    return true;
+                }
             }
 
-            if (IsPointInside(points2, points1[0]))
-            {
-                return true;
-            }
-
-            if (IsPointInside(points1, points2[0]))
+            if (IsPointInside(points2, points1[0]) || IsPointInside(points1, points2[0]))
             {
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 取德旋轉後角度
+        /// </summary>
+        /// <param name="baseAngle">原始角度</param>
+        /// <param name="rotate">調整角度</param>
+        /// <returns>旋轉後角度</returns>
+        public static int GetRotateAngle(int baseAngle, int rotate)
+        {
+            int result = baseAngle + rotate;
+            if (result > 180)
+            {
+                result = (result % 180) - 180;
+            }
+            else if (result <= -180)
+            {
+                result = (result % 180) + 180;
+            }
+            return result;
         }
     }
 }

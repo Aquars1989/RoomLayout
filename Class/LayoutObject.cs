@@ -182,20 +182,19 @@ namespace RoomLayout
             get { return _Angle; }
             set
             {
-                if (value > 180)
-                {
-                    value = (value % 180) - 180;
-                }
-                else if (value < -180)
-                {
-                    value = (value % 180) + 180;
-                }
+                value = Function.GetRotateAngle(value, 0);
 
                 if (_Angle == value) return;
                 _Angle = value;
                 _RebuildPoints = true;
             }
         }
+
+        /// <summary>
+        /// 是否開啟碰撞撿測
+        /// </summary>
+       [Description("是否開啟碰撞撿測"), DisplayName("碰撞"), Category("配置")]
+        public bool ImpactCheck { get; set; }
 
         private int _ParentLeft;
         /// <summary>
@@ -328,15 +327,13 @@ namespace RoomLayout
                 double charDistance = outside ? fontSize * 1.5F : (width * 0.75F / Name.Length);
 
                 PointF drawCenter = GetDrawCenter();
-                int angle = sizeSwap ? Angle + 90 : Angle;
-                if (angle > 180)
-                {
-                    angle = (angle % 180) - 180;
-                }
+                int angle = sizeSwap ? Function.GetRotateAngle(Angle, 90) : Angle;
+                double rotate2 = Function.GetRotateAngle(Angle, 90) * Math.PI / 180F;
 
-                double rotate2 = (angle + 90) * Math.PI / 180F;
-                if (angle > 145) angle += 180;
-                else if ((angle < -45)) angle += 180;
+                if (angle > 145 || angle < -45)
+                {
+                    angle = Function.GetRotateAngle(angle, 180);
+                }
 
                 double rotate = angle * Math.PI / 180F;
                 float charFixX = (float)(charDistance * Math.Cos(rotate)); //每個字元偏移X
