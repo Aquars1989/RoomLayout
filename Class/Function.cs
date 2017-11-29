@@ -83,7 +83,7 @@ namespace RoomLayout
         }
 
         /// <summary>
-        /// 取德旋轉後角度
+        /// 取得旋轉後角度
         /// </summary>
         /// <param name="baseAngle">原始角度</param>
         /// <param name="rotate">調整角度</param>

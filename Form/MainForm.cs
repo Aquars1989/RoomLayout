@@ -546,7 +546,7 @@ namespace RoomLayout
                 }
             }
 
-            ////繪製選取外框
+            // 繪製選取外框
             //foreach (LayoutObject layoutObject in _SelectedObjects)
             //{
             //    e.Graphics.SmoothingMode = layoutObject.Angle % 90 == 0 ? SmoothingMode.None : SmoothingMode.HighQuality;

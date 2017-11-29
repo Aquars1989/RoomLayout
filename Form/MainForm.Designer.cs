@@ -179,7 +179,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "MainForm";
-            this.Text = "房間配置";
+            this.Text = "RoomLayout";
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.picMain)).EndInit();
             this.panel1.ResumeLayout(false);
